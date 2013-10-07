@@ -134,8 +134,20 @@
     $changed.each(function () {
       var $node  = $($nodes[this[expando]]);
       var $clone = $(this);
+      var props = $clone.position();
 
-      $transition.call($node, $clone.position(), options);
+      // If display state has changed
+      if ($clone.is(':visible') && $node.is(':hidden')) {
+        $.extend(props, options.visible);
+
+      } else if ($clone.is(':hidden') && $node.is(':visible')) {
+        $.extend(props, options.hidden);
+        $node.promise().done(function () {
+          $node.hide();
+        });
+      }
+
+      $transition.call($node, props, options);
       promises.push($node.promise());
     });
 
