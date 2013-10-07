@@ -88,7 +88,7 @@
     });
   };
 
-  var $magicMove = function (options, callback) {
+  var magicMove = function (options, callback) {
     if (typeof options === 'function') {
       callback = options;
       options  = {};
@@ -176,29 +176,24 @@
 
     $clone.remove();
 
-    // Queue up events on $el, and dequeue
-    // when all animations are finished
-    $el.queue(function () {
-      $.when.apply($, promises).done(function () {
-        // Remove 'absolute' styles
-        $unfix.call($el.find(options.selector));
+    var promise = $.when.apply($, promises);
 
-        // Finished animations
-        $el.dequeue();
-      });
+    return promise.done(function () {
+      // Remove 'absolute' styles
+      $unfix.call($el.find(options.selector));
     });
-
-    return this;
   };
 
   $.fn.magicMove = function (options, callback) {
     var $el = this;
 
-    // Throttle animations, so they only
-    // happen once at a time
+    // Throttle animations, so they happen sequentially
     return $el.queue(function () {
-      $magicMove.call($el, options, callback);
-      $el.dequeue();
+      var promise = magicMove.call($el, options, callback);
+
+      promise.done(function () {
+        $el.dequeue();
+      });
     });
   };
 })(jQuery);
