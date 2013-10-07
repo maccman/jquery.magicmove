@@ -1,56 +1,94 @@
 (function($){
   var defaults = {
     selector: '> *',
-    visibleStyle: { opacity: 1, transform: 'scale(1)' },
-    hiddenStyle: { opacity: 0, transform: 'scale(0.001)' }
+    visible: { opacity: 1, transform: 'scale(1)' },
+    hidden: { opacity: 0, transform: 'scale(0.001)' }
   };
 
   var expando = $.expando + 'mm';
 
-  $.fn.fix = function(position){
+  var $fix = function (position) {
     var positions = [];
 
     // Positions are relative to parent
     this.parent().css({position: 'relative'});
 
     // Find all positions without altering elements
-    this.each(function(){
+    this.each(function () {
       positions.push($(this).position());
     });
 
     // Set absolute positions
-    this.each(function(i){
+    this.each(function (i) {
       $(this).css($.extend({position: 'absolute'}, positions[i]));
     });
 
     return this;
   };
 
-  $.fn.unfix = function(){
-    return this.css({position: 'static'});
+  var $unfix = function () {
+    return this.css({position: '', top: '', left: ''});
   };
 
-  var difference = function($nodesA, $nodesB) {
-    return $nodesA.filter(function(){
+  var $transition = function (props, options) {
+    var defaults = {
+      easing: 'linear',
+      duration: 400
+    };
+
+    options = $.extend(
+      {}, defaults, options
+    );
+
+    var effect = [
+      'all',
+      options.duration + 'ms',
+      options.easing
+    ].join(' ');
+
+    props = $.extend(
+      {transition: effect},
+      props
+    );
+
+    var callback = function () {
+      $(this).css('transition', '');
+      $(this).dequeue();
+    };
+
+    return this.queue(function () {
+      setTimeout($.proxy(callback, this), options.duration);
+      $(this).css(props);
+    });
+  };
+
+  var $redraw = function () {
+    return this.each(function () {
+      var redraw = this.offsetTop;
+    });
+  };
+
+  var difference = function ($nodesA, $nodesB) {
+    return $nodesA.filter(function () {
       var nodeA = this;
 
-      return !$nodesB.filter(function(){
+      return !$nodesB.filter(function () {
         return this[expando] == nodeA[expando];
       })[0];
     });
   };
 
-  var intersect = function($nodesA, $nodesB) {
-    return $nodesA.filter(function(){
+  var intersect = function ($nodesA, $nodesB) {
+    return $nodesA.filter(function () {
       var nodeA = this;
 
-      return $nodesB.filter(function(){
+      return $nodesB.filter(function () {
         return this[expando] == nodeA[expando];
       })[0];
     });
   };
 
-  var magicMove = function(options, callback){
+  var $magicMove = function (options, callback) {
     if (typeof options === 'function') {
       callback = options;
       options  = {};
@@ -64,7 +102,9 @@
     var $clone      = $el.clone(true, true);
     var $cloneNodes = $clone.find(options.selector);
 
-    $nodes.each(function(index){
+    // Set a ID to each element, so we match up
+    // all the $nodes and $cloneNodes
+    $nodes.each(function (index) {
       this[expando] = $cloneNodes[index][expando] = index;
     });
 
@@ -89,30 +129,34 @@
     // If node has moved, animate move
     // If node has been removed, fade it out
 
-    $nodes.fix();
+    $fix.call($nodes);
 
-    $changed.each(function(){
+    $changed.each(function () {
       var $node  = $($nodes[this[expando]]);
       var $clone = $(this);
 
-      $node.animate($clone.position());
+      $transition.call($node, $clone.position(), options);
       promises.push($node.promise());
     });
 
-    $added.each(function(){
+    $added.each(function () {
       var $clone = $(this);
       var $pos   = $nodes.eq($clone.index());
-      var $node  = $clone.fix().clone().hide();
+      var $node  = $fix.call($clone).clone();
 
-      $node.insertBefore($pos).fadeIn();
+      $node.css(options.hidden);
+      $node.insertBefore($pos);
+      $redraw.call($node);
+
+      $transition.call($node, options.visible, options);
       promises.push($node.promise());
     });
 
-    $removed.each(function(){
+    $removed.each(function () {
       var $node  = $($nodes[this[expando]]);
 
-      $node.fadeOut();
-      $node.promise().done(function(){
+      $transition.call($node, options.hidden, options);
+      $node.promise().done(function () {
         $node.remove();
       });
       promises.push($node.promise());
@@ -120,13 +164,29 @@
 
     $clone.remove();
 
-    // Remove 'absolute' styles
-    $.when.apply($, promises).done(function(){
-      $el.find(options.selector).unfix();
+    // Queue up events on $el, and dequeue
+    // when all animations are finished
+    $el.queue(function () {
+      $.when.apply($, promises).done(function () {
+        // Remove 'absolute' styles
+        $unfix.call($el.find(options.selector));
+
+        // Finished animations
+        $el.dequeue();
+      });
     });
 
     return this;
   };
 
-  $.fn.magicMove = magicMove;
+  $.fn.magicMove = function (options, callback) {
+    var $el = this;
+
+    // Throttle animations, so they only
+    // happen once at a time
+    return $el.queue(function () {
+      $magicMove.call($el, options, callback);
+      $el.dequeue();
+    });
+  };
 })(jQuery);
