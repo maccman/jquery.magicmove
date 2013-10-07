@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Magic Move</title>
+
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.js"></script>
+  <script src="jquery.magicmove.js"></script>
+
+  <style type="text/css">
+    article, section {
+      display: block;
+    }
+
+    .containers {
+      width: 300px;
+      height: 800px;
+      overflow: hidden
+    }
+
+    .containers section {
+      margin: 10px 0 0 10px;
+      float: left;
+      border: 1px solid #CCC;
+      width: 100px;
+      height: 100px;
+
+      text-align: center;
+      line-height: 100px;
+    }
+  </style>
+
+  <script>
+    jQuery(function($){
+      $('button.animate').click(function(){
+        $('.containers').magicMove(function(){
+          $(this).find('.second').after($('<section>4th</section>').addClass('forth'));
+          // $(this).find('.first').remove();
+        });
+      });
+    });
+  </script>
+</head>
+<body>
+  <button class="animate">Animate</button>
+
+  <article class="containers">
+    <section class="first">1st</section>
+    <section class="second">2nd</section>
+    <section class="third">3rd</section>
+  </article>
+</body>
+</html>
