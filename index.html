@@ -36,8 +36,7 @@
         $('.containers').magicMove({easing: 'ease', duration: 300}, function(){
           var index = $(this).children().length + 1;
           var $el   = $('<section>' + index + 'th</section>');
-          var rdni = Math.round(Math.random() * ($(this).children().length - 1));
-          $(this).find('section:eq(' + rdni + ')').after($el);
+          $(this).find('.second').after($el);
         });
       });
     });
