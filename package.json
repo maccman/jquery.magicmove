@@ -1,0 +1,23 @@
+{
+  "name": "jquery.magicmove",
+  "version": "1.0.0",
+  "description": "Animate DOM transitions.",
+  "main": "jquery.magicmove.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/maccman/jquery.magicmove.git"
+  },
+  "keywords": [
+    "jQuery",
+    "magicmove",
+    "animate"
+  ],
+  "author": "Alex MacCaw",
+  "license": "none",
+  "bugs": {
+    "url": "https://github.com/maccman/jquery.magicmove/issues"
+  }
+}
