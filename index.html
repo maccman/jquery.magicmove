@@ -30,12 +30,13 @@
     }
   </style>
 
+  <script src="https://rawgithub.com/jlbruno/1535691/raw/beb43948368731c0492070f49398bd0539a7b9c6/ordinal.js"></script>
   <script>
     jQuery(function($){
       $('button.animate').click(function(){
         $('.containers').magicMove({easing: 'ease', duration: 300}, function(){
           var index = $(this).children().length + 1;
-          var $el   = $('<section>' + index + 'th</section>');
+          var $el   = $('<section>' + getOrdinal(index) + '</section>');
           $(this).find('.second').after($el);
         });
       });
